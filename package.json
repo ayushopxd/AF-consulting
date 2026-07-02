@@ -1,0 +1,10 @@
+{
+  "name": "ananyas-fusion",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node --check script.js && node --check dev-server.js && mkdir -p dist/assets && cp index.html styles.css script.js dev-server.js dist/ && cp assets/* dist/assets/",
+    "dev": "node dev-server.js",
+    "preview": "node dev-server.js"
+  }
+}
