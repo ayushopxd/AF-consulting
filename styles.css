@@ -150,7 +150,7 @@ img {
   height: 42px;
   overflow: hidden;
   border-radius: 50%;
-  background: #f6b42b;
+  background: white;
   box-shadow: 0 12px 30px rgba(124, 59, 215, 0.28);
 }
 
@@ -158,7 +158,8 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.28);
+  object-position: 50% 38%;
+  transform: scale(1.45);
 }
 
 nav {
@@ -392,6 +393,10 @@ p {
   animation: scrollDot 1.6s ease-in-out infinite;
 }
 
+.hero-scroll b {
+  display: none;
+}
+
 .section {
   position: relative;
   padding: 112px 24px;
@@ -503,7 +508,7 @@ p {
 }
 
 .service-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .service-card,
@@ -548,7 +553,7 @@ p {
 }
 
 .service-card p {
-  min-height: 86px;
+  min-height: 72px;
   margin-bottom: 18px;
   font-size: 0.95rem;
 }
@@ -808,6 +813,54 @@ textarea:focus {
   font-weight: 800;
 }
 
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.contact-links .contact-icon {
+  display: inline-grid;
+  flex: 0 0 46px;
+  width: 46px;
+  min-width: 46px;
+  max-width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgba(124, 59, 215, 0.2);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--violet-700);
+  box-shadow: 0 10px 22px rgba(73, 27, 123, 0.08);
+  line-height: 0;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.contact-icon:hover,
+.contact-icon:focus-visible {
+  background: var(--violet-700);
+  color: white;
+  transform: translateY(-3px);
+}
+
+.contact-icon svg {
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+}
+
+.instagram-icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.instagram-icon .instagram-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
 footer {
   display: flex;
   align-items: center;
@@ -830,8 +883,8 @@ footer {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  object-fit: cover;
-  transform: scale(1.04);
+  object-fit: contain;
+  transform: none;
 }
 
 .reveal {
@@ -919,21 +972,144 @@ footer {
 }
 
 @media (max-width: 620px) {
+  body {
+    background-size: auto, auto, auto;
+  }
+
   .section {
-    padding: 82px 18px;
+    padding: 68px 18px;
   }
 
   .site-header {
     top: 12px;
     width: calc(100% - 20px);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand book"
+      "nav nav";
+    gap: 8px 12px;
+    padding: 9px 10px 10px;
+    border-radius: 28px;
+  }
+
+  .brand {
+    grid-area: brand;
+    min-width: 0;
+    gap: 8px;
   }
 
   .brand span:last-child {
+    display: block;
+    overflow: hidden;
+    font-size: clamp(1rem, 4.8vw, 1.22rem);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+  }
+
+  .nav-cta {
+    grid-area: book;
+    min-height: 42px;
+    padding: 10px 16px;
+  }
+
+  nav {
+    grid-area: nav;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    justify-self: stretch;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid rgba(87, 35, 144, 0.12);
+    font-size: 0.72rem;
+  }
+
+  nav a {
+    padding: 8px 3px;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  nav a:active {
+    background: rgba(124, 59, 215, 0.1);
+  }
+
+  .hero {
+    min-height: 740px;
+    padding: 174px 20px 48px;
+  }
+
+  .hero-overlay {
+    background:
+      linear-gradient(180deg, rgba(22, 6, 34, 0.68), rgba(37, 16, 57, 0.88)),
+      linear-gradient(90deg, rgba(22, 6, 34, 0.7), rgba(37, 16, 57, 0.4));
+  }
+
+  .hero::before,
+  .hero::after {
     display: none;
   }
 
+  .hero-scroll {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    height: auto;
+    margin-top: 22px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.82rem;
+    font-weight: 800;
+    transform: none;
+  }
+
+  .hero-scroll span {
+    position: static;
+    width: auto;
+    height: auto;
+    background: none;
+    animation: none;
+    transform: none;
+  }
+
+  .hero-scroll b {
+    display: inline;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
   h1 {
-    font-size: clamp(2.8rem, 14vw, 3.8rem);
+    font-size: clamp(2.7rem, 12vw, 3.45rem);
+    line-height: 1.02;
+  }
+
+  h2 {
+    font-size: clamp(2.2rem, 10vw, 3rem);
+    line-height: 1.04;
+  }
+
+  .hero .eyebrow {
+    margin-bottom: 14px;
+    font-size: 0.68rem;
+  }
+
+  .hero p {
+    margin-top: 18px;
+    font-size: 1rem;
+    line-height: 1.65;
   }
 
   .hero-actions,
@@ -945,6 +1121,119 @@ footer {
 
   .hero-actions {
     display: grid;
+    gap: 12px;
+  }
+
+  .hero-actions .button {
+    width: 100%;
+  }
+
+  .section-heading {
+    margin-bottom: 30px;
+  }
+
+  .copy p,
+  .section-heading p {
+    font-size: 0.98rem;
+  }
+
+  .about-logo {
+    width: min(190px, 56vw);
+    margin-bottom: 22px;
+  }
+
+  .metrics {
+    gap: 10px;
+    margin-top: 26px;
+  }
+
+  .metrics div {
+    padding: 15px 10px;
+    border-radius: 18px;
+  }
+
+  .metrics strong {
+    font-size: 1.35rem;
+  }
+
+  .metrics span {
+    font-size: 0.72rem;
+  }
+
+  .portrait-wrap {
+    border-radius: 30px;
+    padding: 9px;
+  }
+
+  .portrait-wrap::before {
+    inset: 9px;
+    border-radius: 23px;
+  }
+
+  .portrait-wrap img {
+    border-radius: 23px;
+  }
+
+  .service-card,
+  .price-card {
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .service-card:hover,
+  .price-card:hover {
+    transform: none;
+  }
+
+  .icon {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 16px;
+    border-radius: 15px;
+  }
+
+  .price-card {
+    min-height: 0;
+  }
+
+  .price-card strong {
+    margin: 18px 0;
+    font-size: 3rem;
+  }
+
+  .price-card .button {
+    margin-top: 8px;
+  }
+
+  .timeline {
+    gap: 12px;
+  }
+
+  .step {
+    min-height: 0;
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .step span {
+    margin-bottom: 14px;
+  }
+
+  .faq-item {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .contact-links {
+    margin-top: 20px;
+  }
+
+  .contact-links .contact-icon {
+    flex-basis: 44px;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+    height: 44px;
   }
 
   .service-card p,
@@ -954,6 +1243,35 @@ footer {
 
   .booking-form {
     padding: 18px;
+    gap: 14px;
+    border-radius: 24px;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 52px;
+    border-radius: 16px;
+  }
+
+  textarea {
+    min-height: 130px;
+  }
+
+  footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 20px;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand span:last-child {
+    display: none;
+  }
+
+  .hero {
+    padding-top: 166px;
   }
 }
 

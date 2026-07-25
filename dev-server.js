@@ -4,16 +4,46 @@ const fs = require("fs");
 const path = require("path");
 
 const root = __dirname;
+
+function loadEnvFile() {
+  const envPath = path.join(root, ".env");
+
+  if (!fs.existsSync(envPath)) {
+    return;
+  }
+
+  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+    const match = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
+
+    if (!match || match[2].startsWith("#") || process.env[match[1]]) {
+      continue;
+    }
+
+    const [, key, rawValue] = match;
+    const value = rawValue.replace(/^(?:"([\s\S]*)"|'([\s\S]*)')$/, "$1$2");
+    process.env[key] = value;
+  }
+}
+
+loadEnvFile();
+
 const dataDir = path.join(root, "data");
 const pendingPath = path.join(dataDir, "pending-orders.json");
 const bookingsPath = path.join(dataDir, "bookings.json");
 const startPort = Number(process.env.PORT) || 4173;
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || "";
 const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || "";
+const bookingsPassword = process.env.BOOKINGS_PASSWORD || "";
 const planAmounts = {
   "Plan 1 - ₹2499 - 24-48 Hours": 249900,
   "Plan 2 - ₹1499 - Within One Week": 149900,
-  "Plan 3 - ₹1299 - Within Three Weeks": 129900
+  "Plan 3 - ₹1299 - Within Three Weeks": 129900,
+  "Name Correction - ₹2100": 210000,
+  "Match Making - ₹1900": 190000,
+  "Reiki Physical Illness - 5 Days - ₹2501": 250100,
+  "Reiki Physical Illness - 10 Days - ₹5001": 500100,
+  "Reiki Situation Healing - Per Day - ₹501": 50100,
+  "Auspicious Dates / Muhurat - ₹1001": 100100
 };
 
 const types = {
@@ -77,7 +107,7 @@ function readRequestBody(req) {
 function sanitizeBooking(booking) {
   const clean = {};
 
-  for (const key of ["name", "phone", "email", "city", "service", "plan", "message"]) {
+  for (const key of ["name", "phone", "alternatePhone", "email", "city", "service", "plan", "message"]) {
     clean[key] = String(booking?.[key] || "").trim().slice(0, 600);
   }
 
@@ -85,7 +115,7 @@ function sanitizeBooking(booking) {
 }
 
 function validateBooking(booking) {
-  if (!booking.name || !booking.phone || !booking.email || !booking.service || !booking.plan) {
+  if (!booking.name || !booking.phone || !booking.alternatePhone || !booking.email || !booking.service || !booking.plan) {
     return "Please complete all required booking fields.";
   }
 
@@ -134,7 +164,39 @@ function verifySignature(payment) {
   return generatedSignature === payment.razorpay_signature;
 }
 
+function hasBookingsAccess(suppliedPassword) {
+  if (!bookingsPassword || typeof suppliedPassword !== "string") {
+    return false;
+  }
+
+  const expected = Buffer.from(bookingsPassword);
+  const supplied = Buffer.from(suppliedPassword);
+  return expected.length === supplied.length && crypto.timingSafeEqual(expected, supplied);
+}
+
 async function handleApi(req, res) {
+  if (req.method === "POST" && req.url === "/api/bookings") {
+    if (!bookingsPassword) {
+      sendJson(res, 503, { error: "Bookings access is not configured. Set BOOKINGS_PASSWORD on the server." });
+      return true;
+    }
+
+    try {
+      const body = await readRequestBody(req);
+
+      if (!hasBookingsAccess(body.password)) {
+        sendJson(res, 401, { error: "Incorrect bookings password." });
+        return true;
+      }
+
+      const bookings = readJsonFile(bookingsPath, []);
+      sendJson(res, 200, { bookings: bookings.slice().reverse() });
+    } catch (error) {
+      sendJson(res, 400, { error: error.message });
+    }
+    return true;
+  }
+
   if (req.method === "GET" && req.url === "/api/payment-config") {
     sendJson(res, 200, {
       configured: Boolean(razorpayKeyId && razorpayKeySecret),

@@ -12,22 +12,31 @@ Flow:
 
 ## Required Environment Variables
 
-Create a local `.env` file or set these variables in your hosting platform:
+Create a local `.env` file (it is already excluded from Git) or set these variables in your hosting platform:
 
 ```bash
 RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_key_secret
+BOOKINGS_PASSWORD=choose_a_long_private_password
 ```
 
-For local testing from the terminal:
+Then start the server:
 
 ```bash
-RAZORPAY_KEY_ID=rzp_test_your_key_id RAZORPAY_KEY_SECRET=your_key_secret npm run dev
+npm run dev
 ```
 
 ## Important
 
 Do not expose `RAZORPAY_KEY_SECRET` in frontend code. It must stay on the backend only.
 
+If a key secret was ever pasted into a file, terminal screenshot, chat, or committed to Git, revoke it in Razorpay Dashboard and generate a replacement immediately.
+
 For production, replace local JSON storage with a real database such as Supabase,
 Firebase, PostgreSQL, MongoDB, or a hosted backend database.
+
+## Shared bookings page
+
+After setting `BOOKINGS_PASSWORD`, you and your mom can open
+`https://your-domain.com/bookings.html`. Enter that password to view verified,
+paid bookings. The password is never included in the link; share it separately.

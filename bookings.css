@@ -1,0 +1,21 @@
+.bookings-page { min-height: 100vh; background: radial-gradient(circle at top right, rgba(124, 59, 215, .18), transparent 28rem), var(--cream); }
+[hidden] { display: none !important; }
+.bookings-shell { width: min(1100px, calc(100% - 40px)); margin: 0 auto; padding: 48px 0 72px; }
+.bookings-shell > .brand { margin-bottom: 44px; }
+.bookings-card { padding: clamp(24px, 4vw, 48px); border: 1px solid rgba(124, 59, 215, .14); border-radius: 32px; background: rgba(255, 255, 255, .76); box-shadow: var(--shadow); }
+.bookings-heading { display: flex; justify-content: space-between; align-items: start; gap: 24px; margin-bottom: 30px; }
+.bookings-heading h1 { margin: 7px 0; color: var(--violet-950); font-family: Georgia, serif; font-size: clamp(2rem, 5vw, 3rem); }
+.bookings-heading p { margin: 0; color: var(--muted); }
+.bookings-actions { display: flex; gap: 12px; align-items: center; }
+.password-form { max-width: 580px; display: grid; gap: 10px; }
+.password-row { display: flex; gap: 10px; }
+.password-row .button { white-space: nowrap; }
+.text-button { border: 0; background: none; color: var(--violet-700); cursor: pointer; font: inherit; font-weight: 800; }
+.bookings-list { display: grid; gap: 16px; }
+.booking-entry { padding: 24px; border: 1px solid rgba(124, 59, 215, .14); border-radius: 22px; background: white; }
+.booking-entry h2 { margin: 0 0 18px; color: var(--violet-950); font-size: 1.3rem; }
+.booking-entry dl { display: grid; grid-template-columns: 130px 1fr; gap: 8px 18px; margin: 0; }
+.booking-entry dt { color: var(--muted); font-weight: 800; }
+.booking-entry dd { margin: 0; overflow-wrap: anywhere; }
+.booking-message, .empty-bookings { margin: 20px 0 0; padding-top: 16px; border-top: 1px solid rgba(124, 59, 215, .12); color: var(--muted); line-height: 1.6; }
+@media (max-width: 620px) { .bookings-shell { width: min(100% - 28px, 1100px); padding-top: 28px; } .bookings-heading, .password-row { flex-direction: column; } .bookings-actions { width: 100%; justify-content: space-between; } .password-row .button { width: 100%; } .booking-entry dl { grid-template-columns: 1fr; gap: 3px; } .booking-entry dd { margin-bottom: 10px; } }

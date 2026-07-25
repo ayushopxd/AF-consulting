@@ -58,7 +58,13 @@ document.querySelectorAll(".faq-item").forEach((item) => {
 const planAmounts = {
   "Plan 1 - ₹2499 - 24-48 Hours": 2499,
   "Plan 2 - ₹1499 - Within One Week": 1499,
-  "Plan 3 - ₹1299 - Within Three Weeks": 1299
+  "Plan 3 - ₹1299 - Within Three Weeks": 1299,
+  "Name Correction - ₹2100": 2100,
+  "Match Making - ₹1900": 1900,
+  "Reiki Physical Illness - 5 Days - ₹2501": 2501,
+  "Reiki Physical Illness - 10 Days - ₹5001": 5001,
+  "Reiki Situation Healing - Per Day - ₹501": 501,
+  "Auspicious Dates / Muhurat - ₹1001": 1001
 };
 
 function formToBooking(form) {
@@ -66,6 +72,7 @@ function formToBooking(form) {
   return {
     name: data.get("name"),
     phone: data.get("phone"),
+    alternatePhone: data.get("alternatePhone"),
     email: data.get("email"),
     city: data.get("city"),
     service: data.get("service"),

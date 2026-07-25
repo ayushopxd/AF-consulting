@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Bookings | Ananya's Fusion</title>
+    <link rel="icon" href="assets/ananyas-fusion-logo-clean.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="bookings.css" />
+  </head>
+  <body class="bookings-page">
+    <main class="bookings-shell">
+      <a class="brand" href="/" aria-label="Ananya's Fusion home">
+        <span class="brand-mark"><img src="assets/ananyas-fusion-logo-clean.png" alt="" /></span>
+        <span>Ananya's Fusion</span>
+      </a>
+      <section class="bookings-card" aria-labelledby="bookings-title">
+        <div class="bookings-heading">
+          <div>
+            <span class="eyebrow">Private dashboard</span>
+            <h1 id="bookings-title">Paid bookings</h1>
+            <p id="booking-summary">Enter the private password to view bookings.</p>
+          </div>
+          <div class="bookings-actions" hidden>
+            <button class="button secondary" type="button" id="refresh-bookings">Refresh</button>
+            <button class="text-button" type="button" id="sign-out">Sign out</button>
+          </div>
+        </div>
+        <form id="bookings-login" class="password-form">
+          <label for="bookings-password">Bookings password</label>
+          <div class="password-row">
+            <input id="bookings-password" type="password" autocomplete="current-password" required />
+            <button class="button primary" type="submit">View bookings</button>
+          </div>
+          <p id="login-note" class="form-note" role="status"></p>
+        </form>
+        <div id="bookings-list" class="bookings-list" hidden></div>
+      </section>
+    </main>
+    <script src="bookings.js"></script>
+  </body>
+</html>
