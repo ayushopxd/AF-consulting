@@ -67,6 +67,11 @@ const planAmounts = {
   "Auspicious Dates / Muhurat - ₹1001": 1001
 };
 
+function normalisePhoneNumber(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  return digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
+}
+
 function formToBooking(form) {
   const data = new FormData(form);
   return {
@@ -113,6 +118,11 @@ document.querySelector(".booking-form").addEventListener("submit", async (event)
 
   if (!amount) {
     note.textContent = "Please select a valid consultation plan before payment.";
+    return;
+  }
+
+  if (booking.alternatePhone && normalisePhoneNumber(booking.alternatePhone) === normalisePhoneNumber(booking.phone)) {
+    note.textContent = "Alternate contact number must be different from the phone number.";
     return;
   }
 

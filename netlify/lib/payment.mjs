@@ -38,12 +38,20 @@ export function sanitizeBooking(booking) {
   return clean;
 }
 
+function normalisePhoneNumber(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  return digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
+}
+
 export function validateBooking(booking) {
-  if (!booking.name || !booking.phone || !booking.alternatePhone || !booking.email || !booking.service || !booking.plan) {
+  if (!booking.name || !booking.phone || !booking.email || !booking.service || !booking.plan) {
     return "Please complete all required booking fields.";
   }
 
   if (!planAmounts[booking.plan]) return "Invalid consultation plan selected.";
+  if (booking.alternatePhone && normalisePhoneNumber(booking.alternatePhone) === normalisePhoneNumber(booking.phone)) {
+    return "Alternate contact number must be different from the phone number.";
+  }
   return "";
 }
 
