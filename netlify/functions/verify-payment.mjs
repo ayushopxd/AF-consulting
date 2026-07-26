@@ -1,15 +1,10 @@
-const {
-  bookingsStore,
-  json,
-  parseBody,
-  verifySignature
-} = require("../lib/payment");
+import { bookingsStore, json, parseBody, verifySignature } from "../lib/payment.mjs";
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") return json(405, { error: "Method not allowed." });
+export default async function verifyPayment(request) {
+  if (request.method !== "POST") return json(405, { error: "Method not allowed." });
 
   try {
-    const { payment = {} } = parseBody(event);
+    const { payment = {} } = await parseBody(request);
     const store = bookingsStore();
     const pendingData = await store.get(`pending/${payment.razorpay_order_id}`, { consistency: "strong" });
     if (!pendingData) return json(400, { error: "Payment order was not found." });
@@ -28,11 +23,10 @@ exports.handler = async (event) => {
       },
       createdAt: new Date().toISOString()
     };
-
     await store.set(`bookings/${savedBooking.id}`, JSON.stringify(savedBooking));
     await store.delete(`pending/${payment.razorpay_order_id}`);
     return json(200, { ok: true, bookingId: savedBooking.id });
   } catch (error) {
     return json(500, { error: error.message || "Unable to verify payment." });
   }
-};
+}

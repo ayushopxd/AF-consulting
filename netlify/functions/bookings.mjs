@@ -1,11 +1,11 @@
-const { bookingsStore, hasBookingsAccess, json, parseBody } = require("../lib/payment");
+import { bookingsStore, hasBookingsAccess, json, parseBody } from "../lib/payment.mjs";
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") return json(405, { error: "Method not allowed." });
+export default async function listBookings(request) {
+  if (request.method !== "POST") return json(405, { error: "Method not allowed." });
   if (!process.env.BOOKINGS_PASSWORD) return json(503, { error: "Bookings access is not configured." });
 
   try {
-    const { password } = parseBody(event);
+    const { password } = await parseBody(request);
     if (!hasBookingsAccess(password)) return json(401, { error: "Incorrect bookings password." });
 
     const store = bookingsStore();
@@ -19,4 +19,4 @@ exports.handler = async (event) => {
   } catch (error) {
     return json(500, { error: error.message || "Unable to load bookings." });
   }
-};
+}
