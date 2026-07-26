@@ -8,7 +8,7 @@ Flow:
 3. Razorpay Checkout opens for payment.
 4. After successful payment, the frontend sends the payment response to the backend.
 5. The backend verifies the Razorpay signature.
-6. Only verified paid bookings are stored in `data/bookings.json`.
+6. Only verified paid bookings are stored securely.
 
 ## Required Environment Variables
 
@@ -26,14 +26,30 @@ Then start the server:
 npm run dev
 ```
 
+## Netlify deployment
+
+The site now includes Netlify Functions for payment creation, payment verification,
+and the private bookings page. On Netlify, add the same three variables in
+**Project configuration → Environment variables**, then trigger a new deploy:
+
+```text
+RAZORPAY_KEY_ID
+RAZORPAY_KEY_SECRET
+BOOKINGS_PASSWORD
+```
+
+Verified bookings are stored in Netlify Blobs, so they remain available from
+`/bookings.html` on future deploys. The local development server continues to
+store its test bookings in `data/bookings.json`.
+
 ## Important
 
 Do not expose `RAZORPAY_KEY_SECRET` in frontend code. It must stay on the backend only.
 
 If a key secret was ever pasted into a file, terminal screenshot, chat, or committed to Git, revoke it in Razorpay Dashboard and generate a replacement immediately.
 
-For production, replace local JSON storage with a real database such as Supabase,
-Firebase, PostgreSQL, MongoDB, or a hosted backend database.
+For larger volumes or reporting needs, move the booking data to a database such
+as Supabase, Firebase, PostgreSQL, or MongoDB.
 
 ## Shared bookings page
 
