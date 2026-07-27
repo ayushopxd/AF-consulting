@@ -82,28 +82,50 @@ function providerLabel(user) {
 
 function renderAccount(user) {
   currentUser = user;
+
+  // Firebase auth state is the source of truth.
+  // Clear temporary messages/loading states whenever auth state changes.
+  setStatus("");
+
+  setBusy(googleButton, false);
+  setBusy(signOutButton, false);
+
   if (!user) {
     triggerLabel.textContent = "Sign In";
     trigger.setAttribute("aria-label", "Sign in to your account");
     triggerAvatar.hidden = true;
+
+    clearPhoneState();
     setView("sign-in");
     return;
   }
 
-  const name = user.displayName || user.email || user.phoneNumber || "Your account";
+  const name =
+    user.displayName ||
+    user.email ||
+    user.phoneNumber ||
+    "Your account";
+
   triggerLabel.textContent = "Account";
   trigger.setAttribute("aria-label", "Open your account");
   triggerAvatar.hidden = false;
+
   setAvatar(triggerAvatar, user);
+
   accountName.textContent = name;
   accountDetails.replaceChildren();
 
-  [user.email, user.phoneNumber, providerLabel(user)].filter(Boolean).forEach((value) => {
-    const detail = document.createElement("p");
-    detail.textContent = value;
-    accountDetails.append(detail);
-  });
+  [user.email, user.phoneNumber, providerLabel(user)]
+    .filter(Boolean)
+    .forEach((value) => {
+      const detail = document.createElement("p");
+      detail.textContent = value;
+      accountDetails.append(detail);
+    });
+
   setAvatar(accountAvatar, user);
+
+  clearPhoneState();
   setView("account");
 }
 
@@ -189,6 +211,7 @@ async function requestOtp() {
 
 async function verifyOtp() {
   const code = otpInput.value.replace(/\D/g, "");
+
   if (!confirmationResult || code.length < 6) {
     setStatus("Enter the 6-digit OTP sent to your phone.", "error");
     otpInput.focus();
@@ -196,15 +219,16 @@ async function verifyOtp() {
   }
 
   const submit = otpForm.querySelector('button[type="submit"]');
+
   setBusy(submit, true, "Verifying…");
   setStatus("Verifying your phone number…");
+
   try {
     await confirmationResult.confirm(code);
-    setStatus("You’re signed in.", "success");
-    clearPhoneState();
+
+    // Firebase auth observer handles successful sign-in UI.
   } catch (error) {
     setStatus(friendlyAuthError(error, "phone"), "error");
-  } finally {
     setBusy(submit, false);
   }
 }
@@ -225,12 +249,14 @@ dialog.addEventListener("close", () => {
 googleButton.addEventListener("click", async () => {
   setBusy(googleButton, true, "Opening Google…");
   setStatus("Opening secure Google sign-in…");
+
   try {
     await signInWithGoogle();
-    setStatus("You’re signed in.", "success");
+
+    // Do not render or show success here.
+    // observeAuthState() will update the UI.
   } catch (error) {
     setStatus(friendlyAuthError(error), "error");
-  } finally {
     setBusy(googleButton, false);
   }
 });
@@ -256,12 +282,13 @@ changePhoneButton.addEventListener("click", () => {
 signOutButton.addEventListener("click", async () => {
   setBusy(signOutButton, true, "Signing out…");
   setStatus("Signing out…");
+
   try {
     await signOutCustomer();
-    setStatus("You’re signed out.", "success");
+
+    // Firebase auth observer handles successful sign-out UI.
   } catch (error) {
     setStatus(friendlyAuthError(error), "error");
-  } finally {
     setBusy(signOutButton, false);
   }
 });
