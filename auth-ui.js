@@ -45,9 +45,16 @@ function setView(name) {
   });
 }
 
-function setBusy(button, busy, label) {
+function setBusy(button, busy, busyLabel = "") {
   button.disabled = busy;
-  if (label) button.textContent = busy ? label : button.dataset.label;
+
+  if (busy) {
+    if (busyLabel) {
+      button.textContent = busyLabel;
+    }
+  } else {
+    button.textContent = button.dataset.label || button.textContent;
+  }
 }
 
 function initials(user) {
@@ -286,7 +293,8 @@ signOutButton.addEventListener("click", async () => {
   try {
     await signOutCustomer();
 
-    // Firebase auth observer handles successful sign-out UI.
+    // Update immediately after Firebase confirms sign-out.
+    renderAccount(null);
   } catch (error) {
     setStatus(friendlyAuthError(error), "error");
     setBusy(signOutButton, false);
