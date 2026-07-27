@@ -16,8 +16,8 @@ const define = Object.fromEntries(
 
 await mkdir("dist", { recursive: true });
 await build({
-  entryPoints: ["firebase-client.js"],
-  outfile: "dist/firebase-client.js",
+  entryPoints: ["firebase-client.js", "auth-ui.js"],
+  outdir: "dist",
   bundle: true,
   format: "esm",
   platform: "browser",

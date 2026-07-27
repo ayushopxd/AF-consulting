@@ -36,7 +36,13 @@
         <a href="#plans">Plans</a>
         <a href="#contact">Contact</a>
       </nav>
-      <a class="nav-cta" href="#contact">Book</a>
+      <div class="header-actions">
+        <button class="account-trigger" type="button" id="account-trigger" aria-haspopup="dialog" aria-label="Sign in to your account">
+          <span class="account-trigger-avatar" id="account-trigger-avatar" hidden aria-hidden="true"></span>
+          <span id="account-trigger-label">Sign In</span>
+        </button>
+        <a class="nav-cta" href="#contact">Book</a>
+      </div>
     </header>
 
     <main>
@@ -427,7 +433,71 @@
       <a href="#home">Back to top</a>
     </footer>
 
+    <dialog class="auth-dialog" id="account-dialog" aria-labelledby="account-dialog-title">
+      <div class="auth-dialog-shell">
+        <button class="auth-close" type="button" id="account-close" aria-label="Close account dialog">×</button>
+        <div class="auth-dialog-heading">
+          <span class="eyebrow">Your account</span>
+          <h2 id="account-dialog-title">Welcome to Ananya's Fusion</h2>
+          <p>Sign in to keep your consultation experience connected.</p>
+        </div>
+
+        <section class="auth-view" data-auth-view="loading">
+          <p class="auth-loading" role="status">Checking your account…</p>
+        </section>
+
+        <section class="auth-view" data-auth-view="sign-in" hidden>
+          <button class="auth-google-button" type="button" id="google-sign-in" data-label="Continue with Google">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285f4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.8 3-4.3 3-7.3Z" /><path fill="#34a853" d="M12 22c2.7 0 5-.9 6.6-2.5L15.4 17c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z" /><path fill="#fbbc05" d="M6.4 13.8a6 6 0 0 1 0-3.7V7.5H3.1a10 10 0 0 0 0 8.9l3.3-2.6Z" /><path fill="#ea4335" d="M12 6.1c1.5 0 2.9.5 3.9 1.5l2.9-2.9A9.9 9.9 0 0 0 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6.1 12 6.1Z" /></svg>
+            Continue with Google
+          </button>
+          <div class="auth-divider"><span>or</span></div>
+          <form class="auth-phone-form" id="phone-sign-in-form" novalidate>
+            <label for="auth-phone">Phone number</label>
+            <div class="auth-phone-input">
+              <span aria-hidden="true">+91</span>
+              <input id="auth-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="98765 43210" aria-describedby="auth-phone-help" required />
+            </div>
+            <p id="auth-phone-help" class="auth-help">We’ll send a one-time password by SMS.</p>
+            <div id="phone-recaptcha" aria-hidden="true"></div>
+            <button class="button primary auth-submit" type="submit" data-label="Send OTP">Send OTP</button>
+          </form>
+        </section>
+
+        <section class="auth-view" data-auth-view="otp" hidden>
+          <p class="auth-help">Enter the 6-digit OTP sent to your phone number.</p>
+          <form class="auth-phone-form" id="otp-form" novalidate>
+            <label for="auth-otp">One-time password</label>
+            <input id="auth-otp" name="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="• • • • • •" required />
+            <button class="button primary auth-submit" type="submit" data-label="Verify OTP">Verify OTP</button>
+          </form>
+          <div class="auth-inline-actions">
+            <button class="text-button" type="button" id="change-phone">Change number</button>
+            <button class="text-button" type="button" id="resend-otp" data-label="Resend OTP">Resend OTP</button>
+          </div>
+        </section>
+
+        <section class="auth-view auth-account-view" data-auth-view="account" hidden>
+          <div class="auth-profile">
+            <span class="auth-profile-avatar" id="account-avatar" aria-hidden="true"></span>
+            <div>
+              <h3 id="account-name">Your account</h3>
+              <div id="account-details" class="auth-account-details"></div>
+            </div>
+          </div>
+          <div class="auth-coming-soon">
+            <strong>My consultations</strong>
+            <span>Your consultation history will appear here soon.</span>
+          </div>
+          <button class="button secondary auth-submit" type="button" id="auth-sign-out" data-label="Sign Out">Sign Out</button>
+        </section>
+
+        <p class="auth-status" id="auth-status" role="status" aria-live="polite"></p>
+      </div>
+    </dialog>
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="script.js"></script>
+    <script type="module" src="auth-ui.js"></script>
   </body>
 </html>

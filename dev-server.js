@@ -308,6 +308,9 @@ async function handleApi(req, res) {
 
 function safePath(urlPath) {
   const decoded = decodeURIComponent(urlPath.split("?")[0]);
+  if (decoded === "/auth-ui.js") {
+    return path.join(root, "dist", "auth-ui.js");
+  }
   const requested = decoded === "/" ? "/index.html" : decoded;
   const filePath = path.normalize(path.join(root, requested));
   return filePath.startsWith(root) ? filePath : null;
