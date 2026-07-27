@@ -32,10 +32,28 @@ export function observeAuthState(onChange, onError) {
 }
 
 export async function signInWithGoogle() {
-  const auth = await getPersistentAuth();
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: "select_account" });
-  return signInWithPopup(auth, provider);
+  try {
+    const auth = await getPersistentAuth();
+
+    console.log("Firebase Auth diagnostic:", {
+      authDomain: auth.app.options.authDomain,
+      projectId: auth.app.options.projectId,
+      currentDomain: window.location.hostname
+    });
+
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    return await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.error("GOOGLE AUTH FAILED:", {
+      code: error?.code,
+      message: error?.message,
+      name: error?.name
+    });
+
+    throw error;
+  }
 }
 
 export function createPhoneRecaptcha(container) {
