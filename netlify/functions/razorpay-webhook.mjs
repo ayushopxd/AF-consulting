@@ -52,9 +52,9 @@ export default async function razorpayWebhook(request) {
         throw new WebhookError("Payment order does not match this booking.");
       }
       if (booking.paymentStatus === "paid") {
-        if (booking.razorpayPaymentId === paymentId && booking.status === "confirmed") return;
-        throw new WebhookError("Booking has a conflicting payment.", 409);
-      }
+  if (booking.razorpayPaymentId === paymentId) return;
+  throw new WebhookError("Booking has a conflicting payment.", 409);
+}
       if (booking.paymentStatus !== "unpaid") {
         throw new WebhookError("Booking is not available for payment.");
       }

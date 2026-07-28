@@ -1,3 +1,11 @@
+import { getIdTokenResult } from "firebase/auth";
+import {
+  collection,
+  getDocs,
+  query,
+  where
+} from "firebase/firestore";
+import { firestoreDb } from "./firebase-client.js";
 import {
   createPhoneRecaptcha,
   friendlyAuthError,
@@ -26,7 +34,8 @@ const accountName = document.querySelector("#account-name");
 const accountDetails = document.querySelector("#account-details");
 const accountAvatar = document.querySelector("#account-avatar");
 const recaptchaContainer = document.querySelector("#phone-recaptcha");
-
+const consultationsList = document.querySelector("#account-consultations");
+const adminDashboardLink = document.querySelector("#admin-dashboard-link");
 let currentUser = null;
 let confirmationResult = null;
 let recaptchaVerifier = null;
@@ -86,7 +95,162 @@ function providerLabel(user) {
   if (providers.has("phone")) return "Phone number";
   return "Account";
 }
+function formatBookingDate(value) {
+  if (!value) return "—";
 
+  const date =
+    typeof value.toDate === "function"
+      ? value.toDate()
+      : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(date);
+}
+
+function formatAmount(amount) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return "—";
+
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0
+  }).format(value);
+}
+
+function createBookingDetail(label, value) {
+  const item = document.createElement("div");
+  item.className = "auth-consultation-detail";
+
+  const heading = document.createElement("span");
+  heading.className = "auth-consultation-label";
+  heading.textContent = label;
+
+  const content = document.createElement("span");
+  content.textContent = value || "—";
+
+  item.append(heading, content);
+  return item;
+}
+
+async function loadConsultations(user) {
+  if (!consultationsList || !firestoreDb || !user) return;
+
+  consultationsList.replaceChildren();
+
+  const loading = document.createElement("p");
+  loading.className = "auth-help";
+  loading.textContent = "Loading your consultations…";
+  consultationsList.append(loading);
+
+  try {
+    const bookingsQuery = query(
+      collection(firestoreDb, "bookings"),
+      where("userId", "==", user.uid)
+    );
+
+    const snapshot = await getDocs(bookingsQuery);
+
+    if (currentUser?.uid !== user.uid) return;
+
+    const bookings = snapshot.docs
+      .map((document) => ({
+        id: document.id,
+        ...document.data()
+      }))
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toMillis?.() || 0;
+        const bTime = b.createdAt?.toMillis?.() || 0;
+        return bTime - aTime;
+      });
+
+    consultationsList.replaceChildren();
+
+    if (!bookings.length) {
+      const empty = document.createElement("p");
+      empty.className = "auth-help";
+      empty.textContent = "You have no consultations yet.";
+      consultationsList.append(empty);
+      return;
+    }
+
+    bookings.forEach((booking) => {
+      const card = document.createElement("article");
+      card.className = "auth-consultation-card";
+
+      const header = document.createElement("div");
+      header.className = "auth-consultation-card-heading";
+
+      const title = document.createElement("strong");
+      title.textContent = booking.service || "Consultation";
+
+      const statusBadge = document.createElement("span");
+      statusBadge.className = "auth-consultation-status";
+      statusBadge.textContent =
+        String(booking.status || "pending")
+          .replaceAll("_", " ");
+
+      header.append(title, statusBadge);
+
+      const details = document.createElement("div");
+      details.className = "auth-consultation-details";
+
+      details.append(
+        createBookingDetail("Plan", booking.plan),
+        createBookingDetail("Amount", formatAmount(booking.amount)),
+        createBookingDetail(
+          "Payment",
+          String(booking.paymentStatus || "unpaid").replaceAll("_", " ")
+        ),
+        createBookingDetail("Booked", formatBookingDate(booking.createdAt))
+      );
+
+      if (booking.paidAt) {
+        details.append(
+          createBookingDetail("Paid", formatBookingDate(booking.paidAt))
+        );
+      }
+
+      card.append(header, details);
+      consultationsList.append(card);
+    });
+  } catch (error) {
+    if (currentUser?.uid !== user.uid) return;
+
+    console.error("Unable to load consultations:", error);
+
+    consultationsList.replaceChildren();
+
+    const message = document.createElement("p");
+    message.className = "auth-help";
+    message.textContent =
+      "We couldn't load your consultations right now. Please try again.";
+    consultationsList.append(message);
+  }
+}
+
+async function updateAdminAccess(user) {
+  if (!adminDashboardLink) return;
+
+  adminDashboardLink.hidden = true;
+
+  if (!user) return;
+
+  try {
+    const tokenResult = await getIdTokenResult(user);
+
+    if (currentUser?.uid !== user.uid) return;
+
+    adminDashboardLink.hidden = tokenResult.claims.admin !== true;
+  } catch (error) {
+    console.error("Unable to verify admin access:", error);
+    adminDashboardLink.hidden = true;
+  }
+}
 function renderAccount(user) {
   currentUser = user;
 
@@ -98,6 +262,8 @@ function renderAccount(user) {
   setBusy(signOutButton, false);
 
   if (!user) {
+    adminDashboardLink.hidden = true;
+    consultationsList.replaceChildren();
     triggerLabel.textContent = "Sign In";
     trigger.setAttribute("aria-label", "Sign in to your account");
     triggerAvatar.hidden = true;
@@ -133,7 +299,10 @@ function renderAccount(user) {
   setAvatar(accountAvatar, user);
 
   clearPhoneState();
-  setView("account");
+setView("account");
+
+loadConsultations(user);
+updateAdminAccess(user);
 }
 
 function clearResendTimer() {

@@ -485,10 +485,29 @@
               <div id="account-details" class="auth-account-details"></div>
             </div>
           </div>
-          <div class="auth-coming-soon">
-            <strong>My consultations</strong>
-            <span>Your consultation history will appear here soon.</span>
-          </div>
+          <div class="auth-consultations">
+  <div class="auth-consultations-heading">
+    <strong>My Consultations</strong>
+    <span>Your bookings and consultation status.</span>
+  </div>
+
+  <div
+    id="account-consultations"
+    class="auth-consultations-list"
+    aria-live="polite"
+  >
+    <p class="auth-help">Loading your consultations…</p>
+  </div>
+</div>
+
+<a
+  href="admin-bookings.html"
+  class="button secondary auth-submit"
+  id="admin-dashboard-link"
+  hidden
+>
+  Admin Dashboard
+</a>
           <button class="button secondary auth-submit" type="button" id="auth-sign-out" data-label="Sign Out">Sign Out</button>
         </section>
 
