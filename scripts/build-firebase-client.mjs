@@ -19,6 +19,7 @@ await build({
   entryPoints: ["firebase-client.js", "auth-ui.js", "booking-service.js", "script.js"],
   outdir: "dist",
   bundle: true,
+  splitting: true,
   format: "esm",
   platform: "browser",
   target: ["es2020"],
