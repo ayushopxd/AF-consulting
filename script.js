@@ -94,7 +94,7 @@ function formToBooking(form) {
 }
 
 async function createBookingOrder(bookingId, user) {
-  const response = await fetch("/api/create-booking-order", {
+  const response = await fetch("/.netlify/functions/create-booking-order", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${await user.getIdToken()}`,
@@ -108,7 +108,7 @@ async function createBookingOrder(bookingId, user) {
 }
 
 async function verifyBookingPayment(payment, user) {
-  const response = await fetch("/api/verify-booking-payment", {
+  const response = await fetch("/.netlify/functions/verify-booking-payment", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${await user.getIdToken()}`,
