@@ -13,6 +13,10 @@ const planAmounts = {
   "Auspicious Dates / Muhurat - ₹1001": 100100
 };
 
+export function getPlanAmountInPaise(plan) {
+  return planAmounts[plan] || 0;
+}
+
 export function json(status, body) {
   return new Response(JSON.stringify(body), {
     status,

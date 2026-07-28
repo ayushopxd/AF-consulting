@@ -1,3 +1,6 @@
+import { createBooking } from "./booking-service.js";
+import { firebaseAuth } from "./firebase-client.js";
+
 document.body.classList.add("loading");
 
 const loader = document.querySelector(".loader");
@@ -67,6 +70,10 @@ const planAmounts = {
   "Auspicious Dates / Muhurat - ₹1001": 1001
 };
 
+let pendingBookingId = null;
+let pendingPaymentResponse = null;
+let bookingSubmissionInFlight = false;
+
 function normalisePhoneNumber(value) {
   const digits = String(value || "").replace(/\D/g, "");
   return digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
@@ -86,30 +93,46 @@ function formToBooking(form) {
   };
 }
 
-async function postJson(url, payload) {
-  const response = await fetch(url, {
+async function createBookingOrder(bookingId, user) {
+  const response = await fetch("/api/create-booking-order", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    headers: {
+      Authorization: `Bearer ${await user.getIdToken()}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ bookingId })
   });
-  const raw = await response.text();
-  let data;
-
-  try {
-    data = raw ? JSON.parse(raw) : {};
-  } catch {
-    throw new Error("The payment service is not available yet. Please try again shortly.");
-  }
-
-  if (!response.ok) {
-    throw new Error(data.error || "Something went wrong. Please try again.");
-  }
-
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "Unable to prepare payment.");
   return data;
+}
+
+async function verifyBookingPayment(payment, user) {
+  const response = await fetch("/api/verify-booking-payment", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${await user.getIdToken()}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payment)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "Payment verification failed.");
+  return data;
+}
+
+function paymentPrefill(user) {
+  const prefill = {};
+  if (user.displayName) prefill.name = user.displayName;
+  if (user.email) prefill.email = user.email;
+  if (user.phoneNumber) prefill.contact = user.phoneNumber;
+  return prefill;
 }
 
 document.querySelector(".booking-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (bookingSubmissionInFlight) return;
+
   const form = event.currentTarget;
   const submitButton = form.querySelector('button[type="submit"]');
   const note = form.querySelector(".form-note");
@@ -126,59 +149,80 @@ document.querySelector(".booking-form").addEventListener("submit", async (event)
     return;
   }
 
-  if (!window.Razorpay) {
-    note.textContent = "Payment checkout could not load. Please check your internet connection.";
+  if (!firebaseAuth?.currentUser) {
+    note.textContent = "Please sign in to continue with your booking.";
+    document.querySelector("#account-trigger").click();
     return;
   }
 
+  bookingSubmissionInFlight = true;
   submitButton.disabled = true;
-  note.textContent = "Creating secure payment order...";
+  let checkoutOpened = false;
 
   try {
-    const order = await postJson("/api/create-order", { booking });
-    note.textContent = "Opening secure payment checkout...";
+    if (!pendingBookingId) {
+      note.textContent = "Creating your booking…";
+      pendingBookingId = await createBooking({ ...booking, amount });
+      form.dataset.bookingId = pendingBookingId;
+    }
+
+    if (!window.Razorpay) throw new Error("Payment checkout could not load. Please try again.");
+
+    note.textContent = "Creating secure payment order…";
+    const user = firebaseAuth.currentUser;
+    const order = await createBookingOrder(pendingBookingId, user);
+    note.textContent = "Opening secure payment checkout…";
+    let paymentCaptured = false;
 
     const checkout = new window.Razorpay({
       key: order.keyId,
+      order_id: order.orderId,
       amount: order.amount,
       currency: order.currency,
       name: "Ananya's Fusion",
       description: `${booking.service} - ${booking.plan}`,
-      order_id: order.orderId,
-      prefill: {
-        name: booking.name,
-        email: booking.email,
-        contact: booking.phone
-      },
-      notes: {
-        service: booking.service,
-        plan: booking.plan
-      },
-      theme: {
-        color: "#7c3bd7"
-      },
-      handler: async (paymentResponse) => {
-        note.textContent = "Verifying payment and saving booking...";
-        await postJson("/api/verify-payment", {
-          booking,
-          payment: paymentResponse
-        });
-        note.textContent =
-          "Payment successful. Your booking has been submitted and saved.";
-        form.reset();
-        submitButton.disabled = false;
+      prefill: paymentPrefill(user),
+      handler: async (payment) => {
+        paymentCaptured = true;
+        pendingPaymentResponse = {
+          bookingId: pendingBookingId,
+          razorpay_payment_id: payment.razorpay_payment_id,
+          razorpay_order_id: payment.razorpay_order_id,
+          razorpay_signature: payment.razorpay_signature
+        };
+        note.textContent = "Verifying your payment…";
+        try {
+          await verifyBookingPayment(pendingPaymentResponse, user);
+          note.textContent = "Payment confirmed. Your booking has been submitted.";
+        } catch (error) {
+          bookingSubmissionInFlight = false;
+          submitButton.disabled = false;
+          note.textContent = error.message || "Payment could not be verified. Please contact support.";
+        }
       },
       modal: {
         ondismiss: () => {
-          note.textContent = "Payment was not completed. Booking has not been submitted.";
+          if (paymentCaptured) return;
+          bookingSubmissionInFlight = false;
           submitButton.disabled = false;
+          note.textContent = "Payment was not completed. You can try again.";
         }
       }
     });
 
+    checkout.on("payment.failed", () => {
+      bookingSubmissionInFlight = false;
+      submitButton.disabled = false;
+      note.textContent = "Payment failed. You can try again.";
+    });
     checkout.open();
+    checkoutOpened = true;
   } catch (error) {
-    note.textContent = error.message;
-    submitButton.disabled = false;
+    note.textContent = error.message || "Unable to create your booking. Please try again.";
+  } finally {
+    if (!checkoutOpened) {
+      bookingSubmissionInFlight = false;
+      submitButton.disabled = false;
+    }
   }
 });

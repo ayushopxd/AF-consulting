@@ -7,10 +7,28 @@
   node_bundler = "esbuild"
 
 [[redirects]]
-  from = "/api/create-order"
-  to = "/.netlify/functions/create-order"
-  status = 200
-  force = true
+from = "/api/create-order"
+to = "/.netlify/functions/create-order"
+status = 200
+force = true
+
+[[redirects]]
+from = "/api/create-booking-order"
+to = "/.netlify/functions/create-booking-order"
+status = 200
+force = true
+
+[[redirects]]
+from = "/api/verify-booking-payment"
+to = "/.netlify/functions/verify-booking-payment"
+status = 200
+force = true
+
+[[redirects]]
+from = "/api/razorpay-webhook"
+to = "/.netlify/functions/razorpay-webhook"
+status = 200
+force = true
 
 [[redirects]]
   from = "/api/verify-payment"
