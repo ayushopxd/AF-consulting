@@ -1,6 +1,6 @@
 import { observeAuthState } from "./auth-session.js";
 
-const API_URL = "/api/admin-bookings";
+const API_URL = "/.netlify/functions/admin-bookings";
 const filters = ["All", "Confirmed", "Contacted", "Completed"];
 const state = document.querySelector("#admin-state");
 const dashboard = document.querySelector("#admin-dashboard");
