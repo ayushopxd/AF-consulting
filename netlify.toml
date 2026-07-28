@@ -31,6 +31,12 @@ status = 200
 force = true
 
 [[redirects]]
+from = "/api/admin-bookings"
+to = "/.netlify/functions/admin-bookings"
+status = 200
+force = true
+
+[[redirects]]
   from = "/api/verify-payment"
   to = "/.netlify/functions/verify-payment"
   status = 200

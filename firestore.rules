@@ -30,5 +30,24 @@ service cloud.firestore {
       // only inside authorized Netlify Functions.
       allow create, update, delete: if false;
     }
+
+    match /bookings/{bookingId} {
+      // Customers may create only their own unpaid, pending booking using the
+      // current browser booking shape. Payment and lifecycle changes remain
+      // trusted-server operations.
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "pending_payment"
+        && request.resource.data.paymentStatus == "unpaid"
+        && request.resource.data.keys().hasOnly([
+          "userId", "userName", "userEmail", "userPhone", "service", "plan",
+          "amount", "status", "paymentStatus", "createdAt", "updatedAt"
+        ]);
+
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+
+      allow update, delete: if false;
+    }
   }
 }
